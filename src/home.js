@@ -17,7 +17,6 @@ var video = document.querySelector("#camera-stream"),
   style_change = document.querySelector("#change-style-photo"),
   style_name = document.querySelector("#current-model"),
   camera_change = document.querySelector("#change-camera"),
-  mode = 'environment',
   snap,
   hidden_canvas,
   byteCharacters,
@@ -36,39 +35,7 @@ if (!navigator.getMedia) {
   );
 } else {
   // Request the camera.
-  navigator.getMedia(
-    {
-      video: { facingMode: mode }
-    },
-    // Success Callback
-    function(stream) {
-      // Create an object URL for the video stream and
-      // set it as src of our HTLM video element.
-      video.srcObject = stream;
-
-      // Play the video element to start the stream.
-      video.play();
-      video.onplay = function() {
-        showVideo();
-      };
-    },
-    // Error Callback
-    function(err) {
-      var helpurl = "https://support.google.com/chrome/answer/2693767";
-      var str = "NotAllowedError";
-      if(str.includes(err.name)){
-        displayErrorMessage(
-          "<a href='"+helpurl+"'target='_blank'>Please give us permission to access your camera, you can check this help link for Chrome</a>",
-          err
-        );
-      }else {
-        displayErrorMessage(
-          "There was an error with accessing the camera stream: " + err.name,
-          err
-        );
-      }
-    }
-  );
+  changeCamera(camera_change.title);
 }
 
 // Mobile browsers cannot play video without user input,
