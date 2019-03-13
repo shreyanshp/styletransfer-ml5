@@ -16,6 +16,8 @@ var video = document.querySelector("#camera-stream"),
   api_request = document.querySelector("#api-photo"),
   style_change = document.querySelector("#change-style-photo"),
   style_name = document.querySelector("#current-model"),
+  camera_change = document.querySelector("#change-camera"),
+  mode = 'environment',
   snap,
   hidden_canvas,
   byteCharacters,
@@ -36,7 +38,7 @@ if (!navigator.getMedia) {
   // Request the camera.
   navigator.getMedia(
     {
-      video: { facingMode: "environment" }
+      video: { facingMode: mode }
     },
     // Success Callback
     function(stream) {
@@ -116,6 +118,7 @@ delete_photo_btn.addEventListener("click", function(e) {
 });
 
 api_request.addEventListener("click", function(e) {
+  api_request.classList.add("disabled");
   image.style.width = '250px';
   image.style.height = '250px ';
   style.transfer(image, function(err, result) {
@@ -123,6 +126,7 @@ api_request.addEventListener("click", function(e) {
     image.style.height = '100%';
     image.src = result.src;
     download_photo_btn.href = result.src;
+    api_request.classList.remove("disabled");
   });
 });
 
@@ -132,6 +136,18 @@ style_change.addEventListener("click", function(e){
   style = ml5.styleTransfer(otherRandom, function() {
     console.log('Other Model Loaded - '+ otherRandom);
   }); 
+});
+
+camera_change.addEventListener("click", function(e){
+  video.srcObject.getVideoTracks()[0].stop();
+  changeCamera(camera_change.title);
+  if(camera_change.title=='environment'){
+    camera_change.title='user';
+  }else{
+    camera_change.title='environment';
+  }
+  video.play();
+  showVideo();
 });
 
 function showVideo() {
@@ -213,4 +229,40 @@ function b64toBlob(b64Data, contentType, sliceSize) {
 
   var blob = new Blob(byteArrays, { type: contentType });
   return blob;
+}
+
+function changeCamera(data){
+  navigator.getMedia(
+    {
+      video: { facingMode: data }
+    },
+    // Success Callback
+    function(stream) {
+      // Create an object URL for the video stream and
+      // set it as src of our HTML video element.
+      video.srcObject = stream;
+
+      // Play the video element to start the stream.
+      video.play();
+      video.onplay = function() {
+        showVideo();
+      };
+    },
+    // Error Callback
+    function(err) {
+      var helpurl = "https://support.google.com/chrome/answer/2693767";
+      var str = "NotAllowedError";
+      if(str.includes(err.name)){
+        displayErrorMessage(
+          "<a href='"+helpurl+"'target='_blank'>Please give us permission to access your camera, you can check this help link for Chrome</a>",
+          err
+        );
+      }else {
+        displayErrorMessage(
+          "There was an error with accessing the camera stream: " + err.name,
+          err
+        );
+      }
+    }
+  );
 }
