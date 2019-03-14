@@ -99,9 +99,10 @@ api_request.addEventListener("click", function(e) {
 
 style_change.addEventListener("click", function(e){
   var otherRandom = styleArray[parseInt(style_change.title)];
-  style_name.innerHTML = "Current Style Loaded - '"+otherRandom+"'";
+  style_name.innerHTML = "Loading style, please wait...";
   style = ml5.styleTransfer(otherRandom, function() {
     console.log('Other Model Loaded - '+ otherRandom);
+    style_name.innerHTML = "Current Style Loaded - '"+otherRandom+"'";
   });
   if(parseInt(style_change.title)+1 >= styleArray.length){
     style_change.title = '0';
