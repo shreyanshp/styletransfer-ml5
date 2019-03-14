@@ -87,7 +87,7 @@ delete_photo_btn.addEventListener("click", function(e) {
 api_request.addEventListener("click", function(e) {
   api_request.classList.add("disabled");
   image.style.width = '224px';
-  image.style.height = '224px ';
+  image.style.height = '224px';
   style.transfer(image, function(err, result) {
     image.style.width = '100%';
     image.style.height = '100%';
