@@ -21,22 +21,9 @@ var video = document.querySelector("#camera-stream"),
   hidden_canvas,
   byteCharacters,
   context;
-// The getUserMedia interface is used for handling camera input.
-// Some browsers need a prefix so here we're covering all the options
-navigator.getMedia =
-  navigator.getUserMedia ||
-  navigator.webkitGetUserMedia ||
-  navigator.mozGetUserMedia ||
-  navigator.msGetUserMedia;
 
-if (!navigator.getMedia) {
-  displayErrorMessage(
-    "Your browser doesn't have support for the navigator.getUserMedia interface."
-  );
-} else {
-  // Request the camera.
-  changeCamera('environment');
-}
+// Request the camera.
+changeCamera('environment');
 
 // Mobile browsers cannot play video without user input,
 // so here we're using a button to start it manually.
@@ -215,38 +202,69 @@ function b64toBlob(b64Data, contentType, sliceSize) {
   return blob;
 }
 
-function changeCamera(data){
-  navigator.getMedia(
-    {
-      video: { facingMode: data }
-    },
-    // Success Callback
-    function(stream) {
-      // Create an object URL for the video stream and
-      // set it as src of our HTML video element.
-      video.srcObject = stream;
+function changeCamera(data) {
+  navigator.getMedia =
+    navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia;
 
-      // Play the video element to start the stream.
-      video.play();
-      video.onplay = function() {
-        showVideo();
-      };
-    },
-    // Error Callback
-    function(err) {
-      var helpurl = "https://support.google.com/chrome/answer/2693767";
-      var str = "NotAllowedError";
-      if(str.includes(err.name)){
-        displayErrorMessage(
-          "<a href='"+helpurl+"'target='_blank'>Please give us permission to access your camera, you can check this help link for Chrome</a>",
-          err
-        );
-      }else {
+  if (!navigator.getMedia) {
+    var constraints = { video: { facingMode: data } };
+
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then(function(mediaStream) {
+        video.srcObject = mediaStream;
+        video.onloadedmetadata = function(e) {
+          video.play();
+          video.onplay = function() {
+            showVideo();
+          };
+        };
+      })
+      .catch(function(err) {
         displayErrorMessage(
           "There was an error with accessing the camera stream: " + err.name,
           err
         );
+        console.log(err.name + ": " + err.message);
+      }); // always check for errors at the end.
+  } else {
+    navigator.getMedia(
+      {
+        video: { facingMode: data }
+      },
+      // Success Callback
+      function(stream) {
+        // Create an object URL for the video stream and
+        // set it as src of our HTML video element.
+        video.srcObject = stream;
+
+        // Play the video element to start the stream.
+        video.play();
+        video.onplay = function() {
+          showVideo();
+        };
+      },
+      // Error Callback
+      function(err) {
+        var helpurl = "https://support.google.com/chrome/answer/2693767";
+        var str = "NotAllowedError";
+        if (str.includes(err.name)) {
+          displayErrorMessage(
+            "<a href='" +
+              helpurl +
+              "'target='_blank'>Please give us permission to access your camera, you can check this help link for Chrome</a>",
+            err
+          );
+        } else {
+          displayErrorMessage(
+            "There was an error with accessing the camera stream: " + err.name,
+            err
+          );
+        }
       }
-    }
-  );
+    );
+  }
 }
